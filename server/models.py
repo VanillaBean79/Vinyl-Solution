@@ -43,3 +43,27 @@ class User(db.Model, SerializerMixin):
     
     
     
+class Record(db.Model, SerializerMixin):
+    __tablename__ = 'records'
+    
+    
+    id = db.Column(db.Integer, primary_key=True)
+    title = db.Column(db.String, nullable=False)
+    artist = db.Column(db.String, nullable=False)
+    description = db.Column(db.Text)
+    
+    
+    listings = relationship('Listing', back_populates='records', cascade='all, delete-orphan')
+    
+    serialize_rules = ('-listings.record')
+    
+    
+    @validates('title', 'artist')
+    def validates_text_fields(self, key, value):
+        if not value or not value.strip():
+            raise ValueError(f"{key.capitalize()} cannot be blank.")
+        return value
+    
+    
+    
+
