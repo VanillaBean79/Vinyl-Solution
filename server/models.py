@@ -3,6 +3,15 @@ from sqlalchemy.orm import validates, relationship
 from config import db
 from werkzeug.security import generate_password_hash, check_password_hash
 
+import enum
+from sqlalchemy import Enum
+
+
+class ListingType(enum.Enum):
+    SALE = "sale"
+    TRADE = "trade"
+    BOTH = "both"
+
 
 class User(db.Model, SerializerMixin):
     __tablename__ = 'users'
@@ -39,6 +48,12 @@ class User(db.Model, SerializerMixin):
     def validate_email(self, key, value):
         if '@' not in value:
             raise ValueError('Email must be valid.')
+        
+        # Check if email is already being used. 
+        existing_user = User.query.filter_by(email=value).first()
+        if existing_user:
+            raise ValueError("email already in use.")
+        
         return value
     
     
@@ -50,6 +65,7 @@ class Record(db.Model, SerializerMixin):
     id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String, nullable=False)
     artist = db.Column(db.String, nullable=False)
+    listing_type = db.Column(Enum(ListingType), nullable=False)
     description = db.Column(db.Text)
     
     
@@ -64,6 +80,17 @@ class Record(db.Model, SerializerMixin):
             raise ValueError(f"{key.capitalize()} cannot be blank.")
         return value
     
+    @validates('listing_type')
+    def validate_listing_type(self, key, value):
+        if not value not in ['sale', 'trade', 'both']:
+            raise ValueError("Listing_type must be 'sale', 'trade', or 'both'.")
+        return value
     
+    
+class Listing(db.Model, SerializerMixin):
+    __tablename__ = 'listings'
+    
+    
+    id = db.Column(db.Integer, primary_key=True)
     
 
