@@ -92,5 +92,43 @@ class Listing(db.Model, SerializerMixin):
     
     
     id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.Foreign_key('users.id'), nullable=False)
+    record_id = db.Column(db.Integer, db.Foreign_key('records.id'), nullable=False)
+    price = db.Column(db.Numeric(10, 2), nullable=False)
+    location = db.Column(db.String)
+    condition = db.Column(db.String)
+    image_url = db.Column(db.String)
     
+    
+    user = relationship('User', back_populates='listings')
+    record = relationship('Record', back_populates='listings')
+    favorites = relationship('Favorite', back_populates='listings', cascade='all, delete-orphan')
+    
+    
+    serialize_rules = ('-user.listings', '-record.listings', '-favorites.listing')
+    
+    
+    @validates('price')
+    def validate_price(self, key, value):
+        if value is None or value <= 0:
+            raise ValueError("Price must be greater than zero.")
+        return value
+
+
+
+class Favorite(db.Model, SerializerMixin):
+    __tablename__ = 'favorites'
+
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    listing_id = db.Column(db.Integer, db.ForeignKey('listings.id'), nullable=False)
+
+    user = relationship('User', back_populates='favorites')
+    listing = relationship('Listing', back_populates='favorites')
+
+    __table_args__ = (
+        db.UniqueConstraint('user_id', 'listing_id', name='unique_favorite'),
+    )
+    
+    serialize_rules = ('-user.favorites', '-listing.favorites')
 
