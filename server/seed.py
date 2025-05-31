@@ -1,32 +1,81 @@
-# server/seed.py
+from random import randint, choice
+from faker import Faker
 
-from app import app, db
-from models import User, Record, Listing, Favorite
+from app import app
+from models import db, User, Record, Listing, Favorite, ListingType
 
-with app.app_context():
-    print("Clearing old data...")
-    Favorite.query.delete()
-    Listing.query.delete()
-    Record.query.delete()
-    User.query.delete()
+fake = Faker()
 
-    print("Seeding users...")
-    u1 = User(username="rubens", email="rubens@example.com")
-    u2 = User(username="vinylhead", email="vinyl@example.com")
+if __name__ == '__main__':
+    with app.app_context():
+        print("🌱 Starting seed...")
+        
+        db.drop_all()
+        db.create_all()
+        
+        # Create Users
+        users = []
+        for _ in range(5):
+            user = User(
+                username=fake.user_name(),
+                email=fake.email()
+            )
+            user.set_password("password123")
+            users.append(user)
+        
+        db.session.add_all(users)
+        db.session.commit()
 
-    print("Seeding records...")
-    r1 = Record(title="Abbey Road", artist="The Beatles", description="1969 classic")
-    r2 = Record(title="Kind of Blue", artist="Miles Davis", description="1959 jazz masterpiece")
+        # Create Records
+        records = []
+        for _ in range(10):
+            record = Record(
+                title=fake.sentence(nb_words=3).rstrip('.'),
+                artist=fake.name(),
+                listing_type=choice([ListingType.SALE, ListingType.TRADE, ListingType.BOTH]),
+                description=fake.paragraph(nb_sentences=2)
+            )
+            records.append(record)
 
-    print("Seeding listings...")
-    l1 = Listing(user=u1, record=r1, price=29.99, condition="VG+", location="Austin", image_url="https://via.placeholder.com/150")
-    l2 = Listing(user=u2, record=r1, price=34.99, condition="NM", location="Chicago", image_url="https://via.placeholder.com/150")
-    l3 = Listing(user=u1, record=r2, price=25.00, condition="G", location="Austin", image_url="https://via.placeholder.com/150")
+        db.session.add_all(records)
+        db.session.commit()
 
-    print("Seeding favorites...")
-    f1 = Favorite(user=u2, listing=l1)
+        # Create Listings
+        listings = []
+        for _ in range(10):
+            listing = Listing(
+                user=choice(users),
+                record=choice(records),
+                price=round(randint(100, 300) + 0.99, 2),
+                location=fake.city(),
+                condition=choice(['New', 'Used - Like New', 'Used - Good']),
+                image_url=fake.image_url()
+            )
+            listings.append(listing)
 
-    db.session.add_all([u1, u2, r1, r2, l1, l2, l3, f1])
-    db.session.commit()
+        db.session.add_all(listings)
+        db.session.commit()
 
-    print("✅ Done seeding!")
+        # Create Favorites
+        favorites = []
+        
+        # Create a set to track which (user_id, listing_id) combos we've already used
+        used_pairs = set()
+
+        
+        for _ in range(10):
+            user = choice(users)
+            listing = choice(listings)
+            
+            pair = (user.id, listing.id)
+            
+
+            if pair not in used_pairs:
+                favorite = Favorite(user=user, listing=listing)
+                favorites.append(favorite)
+                used_pairs.add(pair)
+
+        db.session.add_all(favorites)
+        db.session.commit()
+
+        print("✅ Database seeded successfully!")

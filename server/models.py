@@ -38,7 +38,7 @@ class User(db.Model, SerializerMixin):
     favorites = relationship('Favorite', back_populates='user', cascade='all, delete-orphan')
     
     # Serialize rules
-    serialize_rules = ('-password_hash', '-favorite.user', '-listings.user') 
+    serialize_rules = ('-password_hash', '-favorites.user', '-listings.user') 
     
     # Password methods (set it and check it)
     def set_password(self, password):
@@ -92,7 +92,7 @@ class Record(db.Model, SerializerMixin):
     
     @validates('listing_type')
     def validate_listing_type(self, key, value):
-        if value not in ['sale', 'trade', 'both']:
+        if value not in ListingType:
             raise ValueError("Listing_type must be 'sale', 'trade', or 'both'.")
         return value
     
@@ -112,7 +112,7 @@ class Listing(db.Model, SerializerMixin):
     
     user = relationship('User', back_populates='listings')
     record = relationship('Record', back_populates='listings')
-    favorites = relationship('Favorite', back_populates='listings', cascade='all, delete-orphan')
+    favorites = relationship('Favorite', back_populates='listing', cascade='all, delete-orphan')
     
     
     serialize_rules = ('-user.listings', '-record.listings', '-favorites.listing')
