@@ -1,10 +1,20 @@
 from sqlalchemy_serializer import SerializerMixin
 from sqlalchemy.orm import validates, relationship
-from config import db
+from flask_sqlalchemy import SQLAlchemy
 from werkzeug.security import generate_password_hash, check_password_hash
 
 import enum
-from sqlalchemy import Enum
+from sqlalchemy import Enum, MetaData
+
+
+# Set naming convention (optional but good for migrations)
+metadata = MetaData(naming_convention={
+    "fk": "fk_%(table_name)s_%(column_0_name)s_%(referred_table_name)s",
+})
+
+db = SQLAlchemy(metadata=metadata)
+
+
 
 
 class ListingType(enum.Enum):
