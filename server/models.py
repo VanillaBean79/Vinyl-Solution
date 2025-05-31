@@ -69,7 +69,7 @@ class Record(db.Model, SerializerMixin):
     description = db.Column(db.Text)
     
     
-    listings = relationship('Listing', back_populates='records', cascade='all, delete-orphan')
+    listings = relationship('Listing', back_populates='record', cascade='all, delete-orphan')
     
     serialize_rules = ('-listings.record')
     
@@ -82,7 +82,7 @@ class Record(db.Model, SerializerMixin):
     
     @validates('listing_type')
     def validate_listing_type(self, key, value):
-        if not value not in ['sale', 'trade', 'both']:
+        if value not in ['sale', 'trade', 'both']:
             raise ValueError("Listing_type must be 'sale', 'trade', or 'both'.")
         return value
     
@@ -92,8 +92,8 @@ class Listing(db.Model, SerializerMixin):
     
     
     id = db.Column(db.Integer, primary_key=True)
-    user_id = db.Column(db.Integer, db.Foreign_key('users.id'), nullable=False)
-    record_id = db.Column(db.Integer, db.Foreign_key('records.id'), nullable=False)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    record_id = db.Column(db.Integer, db.ForeignKey('records.id'), nullable=False)
     price = db.Column(db.Numeric(10, 2), nullable=False)
     location = db.Column(db.String)
     condition = db.Column(db.String)
@@ -125,10 +125,11 @@ class Favorite(db.Model, SerializerMixin):
 
     user = relationship('User', back_populates='favorites')
     listing = relationship('Listing', back_populates='favorites')
-
+    
+    
+    # This prevents the same user from "favoriting" the same listing more than once.
     __table_args__ = (
         db.UniqueConstraint('user_id', 'listing_id', name='unique_favorite'),
     )
     
     serialize_rules = ('-user.favorites', '-listing.favorites')
-
