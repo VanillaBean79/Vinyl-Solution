@@ -11,6 +11,8 @@ if __name__ == '__main__':
         print("🌱 Starting seed...")
         
         db.drop_all()
+        print("Database file:", app.config['SQLALCHEMY_DATABASE_URI'])
+
         db.create_all()
         
         # Create Users
@@ -61,6 +63,8 @@ if __name__ == '__main__':
         
         # Create a set to track which (user_id, listing_id) combos we've already used
         used_pairs = set()
+        
+        
 
         
         for _ in range(10):

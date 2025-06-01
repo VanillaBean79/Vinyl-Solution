@@ -24,3 +24,6 @@ class ProductionConfig(Config):
     SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL')  # set this in prod
     DEBUG = False
     JSON_COMPACT = True
+
+
+print("Using DB at:", 'sqlite:///' + os.path.join(BASE_DIR, 'app.db'))
