@@ -35,4 +35,15 @@ class Signup(Resource):
         
         
         
+class Login(Resource):
+    def post(self):
+        data = request.get_json()
+        user = User.query.filter_by(username=data.get('username')).first()
+        
+        if user and user.check_password(data.get('password')):
+            session['user_id'] = user.id
+            return user.to_dict(rules=('-password_hash',)), 200
+        
+        return {'error': 'Invalid username or password'}, 401
+        
         
