@@ -8,10 +8,10 @@ from flask import request
 from flask_restful import Resource
 from models import db, Record
 
-class RecordResourc(Resource):
+class RecordResource(Resource):
     def get(self):
         records = Record.query.all()
-        return [record.to_dict(rules=('listings',)) for record in records], 200
+        return [record.to_dict('-listings.record',) for record in records], 200
 
     def post(self):
         data = request.get_json()
@@ -32,7 +32,7 @@ class RecordResourc(Resource):
         db.session.add(new_record)
         db.session.commit()
 
-        return new_record.to_dict(), 201
+        return new_record.to_dict(rules=('-listings.record',)), 201
 
         
         

@@ -38,7 +38,9 @@ class User(db.Model, SerializerMixin):
     favorites = relationship('Favorite', back_populates='user', cascade='all, delete-orphan')
     
     # Serialize rules
-    serialize_rules = ('-password_hash', '-favorites.user', '-listings.user') 
+    serialize_rules = ('-password_hash', 
+                       '-favorites.user', 
+                       '-listings.user',) 
     
     # Password methods (set it and check it)
     def set_password(self, password):
@@ -80,7 +82,7 @@ class Record(db.Model, SerializerMixin):
     
     listings = relationship('Listing', back_populates='record', cascade='all, delete-orphan')
     
-    serialize_rules = ('-listings.record')
+    serialize_rules = ('-listings.record',)
     
     
     @validates('title', 'artist')
@@ -89,12 +91,7 @@ class Record(db.Model, SerializerMixin):
             raise ValueError(f"{key.capitalize()} cannot be blank.")
         return value
     
-    @validates('listing_type')
-    def validate_listing_type(self, key, value):
-        if value not in ListingType:
-            raise ValueError("Listing_type must be 'sale', 'trade', or 'both'.")
-        return value
-    
+
     
 class Listing(db.Model, SerializerMixin):
     __tablename__ = 'listings'
@@ -115,15 +112,24 @@ class Listing(db.Model, SerializerMixin):
     favorites = relationship('Favorite', back_populates='listing', cascade='all, delete-orphan')
     
     
-    serialize_rules = ('-user.listings', '-record.listings', '-favorites.listing')
+    serialize_rules = ('-user.listings', 
+                       '-record.listings', 
+                       '-favorites.listing',
+                       )
     
     
     @validates('listing_type')
     def validate_listing_type(self, key, value):
-        if value not in ListingType:
-            raise ValueError("Listing_type must be 'sale', 'trade', or 'both'.")
+        if isinstance(value, str):
+            try:
+                value = ListingType(value.lower())  # convert string to Enum
+            except ValueError:
+                raise ValueError("listing_type must be 'sale', 'trade', or 'both'.")
+        elif not isinstance(value, ListingType):
+            raise ValueError("Invalid listing_type provided.")
         return value
     
+
     
     @validates('price')
     def validate_price(self, key, value):
@@ -149,4 +155,5 @@ class Favorite(db.Model, SerializerMixin):
         db.UniqueConstraint('user_id', 'listing_id', name='unique_favorite'),
     )
     
-    serialize_rules = ('-user.favorites', '-listing.favorites')
+    serialize_rules = ('-user.favorites', 
+                       '-listing.favorites',)

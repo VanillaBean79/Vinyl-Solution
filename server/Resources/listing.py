@@ -6,7 +6,7 @@ from models import db, Listing
 class ListingResource(Resource):
     def get(self):
         listings = Listing.query.all()
-        return[listing.to_dict() for listing in listings], 201
+        return[listing.to_dict(rules=('-user.listings', '-record.listings', '-favorites')) for listing in listings], 200
     
     
     def post(self):
@@ -25,7 +25,7 @@ class ListingResource(Resource):
         db.session.add(new_listing)
         db.session.commit()
         
-        return new_listing.to_dict(), 201
+        return new_listing.to_dict(rules=('-user.listings', '-record.listings', '-favorites')), 201
     
     
     
@@ -35,26 +35,25 @@ class ListingByID(Resource):
         listing = Listing.query.get(id)
         
         if listing:
-            return listing.to_dict(), 200
+            return listing.to_dict(rules=('-user.listings', '-record.listings', '-favorites')), 200
         else:
             return {"message": "Lising not found."}
         
         
     def patch(self, id):
-        
         listing = Listing.query.get(id)
-        
         if not listing:
-            return {"errro": "Listing not found."}
-        
+            return {"error": "Listing not found."}, 404
+
         data = request.get_json()
-        
-        for field in ['price', 'location', 'condition', 'image_url', 'listing_type', 'description',]:
+
+        for field in ['price', 'location', 'condition', 'image_url', 'listing_type', 'description']:
             if field in data:
                 setattr(listing, field, data[field])
-                
-                db.session.commit()
-                return listing.to_dict(), 200
+
+        db.session.commit()
+        return listing.to_dict(rules=('-user.listings', '-record.listings', '-favorites')), 200
+
             
             
     def delete(self, id):
@@ -66,12 +65,3 @@ class ListingByID(Resource):
         db.session.commit()
         
         return {}, 204
-        
-        
-        
-        
-        
-        
-        
-        
-        

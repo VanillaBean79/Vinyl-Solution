@@ -11,8 +11,8 @@ from models import User, Record, Listing, Favorite
 from flask import Flask
 from models import db
 from Resources.user import Signup, Login, Logout, CheckSession
-from Resources.record import Record
-from Resources.listing import Listing, ListingByID
+from Resources.record import RecordResource
+from Resources.listing import ListingResource, ListingByID
 
 
 # Initialize Flask app
@@ -37,31 +37,9 @@ api.add_resource(Signup, '/signup')
 api.add_resource(Login, '/login')
 api.add_resource(Logout, '/logout')
 api.add_resource(CheckSession, '/check_session')
-api.add_resource(Record, '/records')
-api.add_resource(Listing, '/listings')
+api.add_resource(RecordResource, '/records')
+api.add_resource(ListingResource, '/listings')
 api.add_resource(ListingByID, '/listings/<int:id>')
-
-
-
-
-
-
-if __name__ == '__main__':
-    app.run(port=5555, debug=True)
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
