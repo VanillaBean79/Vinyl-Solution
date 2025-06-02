@@ -33,12 +33,7 @@ class Signup(Resource):
         return user.to_dict(rules=('-password_hash',)), 201
     
     
-    
 
-        
-        
-        
-        
 class Login(Resource):
     def post(self):
         data = request.get_json()
@@ -56,7 +51,6 @@ class Logout(Resource):
     def delete(self):
         session.pop('user_id', None)
         return{}, 204
-    
     
     
 

@@ -1,0 +1,77 @@
+from flask import request, session
+from flask_restful import Resource
+from models import db, Listing
+
+
+class Listing(Resource):
+    def get(self):
+        listings = Listing.query.all()
+        return[listing.to_dict() for listing in listings], 201
+    
+    
+    def post(self):
+        data = request.get_json()
+        
+        new_listing = Listing(
+            user_id=data.get('user_id'),
+            record_id=data.get('record_id'),
+            price=data.get('price'),
+            location=data.get('location'),
+            condition=data.get('condition'),
+            image_url=data.get('image_url'),
+            listing_type=data.get('listing_type'),
+            description=data.get('description'),
+        )
+        db.session.add(new_listing)
+        db.commit()
+        
+        return new_listing.to_dict(), 201
+    
+    
+    
+class ListingByID(Resource):
+    def get(self, id):
+        
+        listing = Listing.query.get(id)
+        
+        if listing:
+            return listing.to_dict(), 200
+        else:
+            return {"message": "Lising not found."}
+        
+        
+    def patch(self, id):
+        
+        listing = Listing.query.get(id)
+        
+        if not listing:
+            return {"errro": "Listing not found."}
+        
+        data = request.get_json()
+        
+        for field in ['price', 'location', 'condition', 'image_url', 'listying_type', 'description',]:
+            if field in data:
+                setattr(listing, field, data[field])
+                
+                db.session.commit()
+                return listing.to_dict(), 200
+            
+            
+    def delete(self, id):
+        listing = Listing.query.get(id)
+        if not listing:
+            return {"error": "Listing not found."}
+        
+        db.session.delete(listing)
+        db.session.commit()
+        
+        return {}, 204
+        
+        
+        
+        
+        
+        
+        
+        
+        

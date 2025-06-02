@@ -12,6 +12,7 @@ from flask import Flask
 from models import db
 from Resources.user import Signup, Login, Logout, CheckSession
 from Resources.record import Record
+from Resources.listing import Listing, ListingByID
 
 
 # Initialize Flask app
@@ -37,6 +38,8 @@ api.add_resource(Login, '/login')
 api.add_resource(Logout, '/logout')
 api.add_resource(CheckSession, '/check_session')
 api.add_resource(Record, '/records')
+api.add_resource(Listing, '/listings')
+api.add_resource(ListingByID, '/listings/<int:id>')
 
 
 
