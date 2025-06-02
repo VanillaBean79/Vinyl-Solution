@@ -75,7 +75,7 @@ class Record(db.Model, SerializerMixin):
     id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String, nullable=False)
     artist = db.Column(db.String, nullable=False)
-    description = db.Column(db.Text)
+   
     
     
     listings = relationship('Listing', back_populates='record', cascade='all, delete-orphan')
@@ -108,6 +108,7 @@ class Listing(db.Model, SerializerMixin):
     condition = db.Column(db.String)
     image_url = db.Column(db.String)
     listing_type = db.Column(Enum(ListingType), nullable=False)
+    description = db.Column(db.Text)
     
     user = relationship('User', back_populates='listings')
     record = relationship('Record', back_populates='listings')

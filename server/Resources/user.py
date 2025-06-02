@@ -31,6 +31,10 @@ class Signup(Resource):
         session['user_id'] = user.id
         
         return user.to_dict(rules=('-password_hash',)), 201
+    
+    
+    
+
         
         
         
