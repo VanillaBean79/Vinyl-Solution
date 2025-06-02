@@ -47,3 +47,58 @@ class Login(Resource):
         return {'error': 'Invalid username or password'}, 401
         
         
+        
+class Logout(Resource):
+    def delete(self):
+        session.pop('user_id', None)
+        return{}, 204
+    
+    
+    
+
+class CheckSession(Resource):
+    def get(self):
+        user_id = session.get('user_id')
+
+        if not user_id:
+            return {'error': "Not logged in"}, 401
+
+        user = User.query.get(user_id)
+        if not user:
+            session.pop('user_id', None)
+            return {'error': "User not found"}, 404
+
+        # Build record data with nested listings
+        records_set = {listing.record for listing in user.listings}
+        records_data = []
+
+        for record in records_set:
+            listings_data = []
+            for listing in record.listings:
+                listings_data.append({
+                    "id": listing.id,
+                    "price": str(listing.price),
+                    "location": listing.location,
+                    "condition": listing.condition,
+                    "image_url": listing.image_url,
+                    "listing_type": listing.listing_type.value,
+                    "user": {
+                        "id": listing.user.id,
+                        "username": listing.user.username
+                    }
+                })
+
+            records_data.append({
+                "id": record.id,
+                "title": record.title,
+                "artist": record.artist,
+                "description": record.description,
+                "listings": listings_data
+            })
+
+        return {
+            "id": user.id,
+            "username": user.username,
+            "email": user.email,
+            "records": records_data
+        }, 200

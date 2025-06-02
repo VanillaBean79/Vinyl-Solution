@@ -75,7 +75,6 @@ class Record(db.Model, SerializerMixin):
     id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String, nullable=False)
     artist = db.Column(db.String, nullable=False)
-    listing_type = db.Column(Enum(ListingType), nullable=False)
     description = db.Column(db.Text)
     
     
@@ -108,7 +107,7 @@ class Listing(db.Model, SerializerMixin):
     location = db.Column(db.String)
     condition = db.Column(db.String)
     image_url = db.Column(db.String)
-    
+    listing_type = db.Column(Enum(ListingType), nullable=False)
     
     user = relationship('User', back_populates='listings')
     record = relationship('Record', back_populates='listings')
@@ -116,6 +115,13 @@ class Listing(db.Model, SerializerMixin):
     
     
     serialize_rules = ('-user.listings', '-record.listings', '-favorites.listing')
+    
+    
+    @validates('listing_type')
+    def validate_listing_type(self, key, value):
+        if value not in ListingType:
+            raise ValueError("Listing_type must be 'sale', 'trade', or 'both'.")
+        return value
     
     
     @validates('price')

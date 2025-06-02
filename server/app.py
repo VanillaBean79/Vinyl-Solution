@@ -10,6 +10,7 @@ from config import DevelopmentConfig  # 👈 import your config
 from models import User, Record, Listing, Favorite
 from flask import Flask
 from models import db
+from Resources.user import Signup, Login, Logout, CheckSession
 
 
 # Initialize Flask app
@@ -30,9 +31,18 @@ CORS(app)
 
 
 
+api.add_resource(Signup, '/signup')
+api.add_resource(Login, '/login')
+api.add_resource(Logout, '/logout')
+api.add_resource(CheckSession, '/check_session')
+
+
+
+
+
 
 if __name__ == '__main__':
-    app.run(port=555, debug=True)
+    app.run(port=5555, debug=True)
 
 
 

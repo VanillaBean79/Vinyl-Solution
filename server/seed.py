@@ -34,7 +34,6 @@ if __name__ == '__main__':
             record = Record(
                 title=fake.sentence(nb_words=3).rstrip('.'),
                 artist=fake.name(),
-                listing_type=choice([ListingType.SALE, ListingType.TRADE, ListingType.BOTH]),
                 description=fake.paragraph(nb_sentences=2)
             )
             records.append(record)
@@ -51,7 +50,8 @@ if __name__ == '__main__':
                 price=round(randint(100, 300) + 0.99, 2),
                 location=fake.city(),
                 condition=choice(['New', 'Used - Like New', 'Used - Good']),
-                image_url=fake.image_url()
+                image_url=fake.image_url(),
+                listing_type=choice([ListingType.SALE, ListingType.TRADE, ListingType.BOTH]),
             )
             listings.append(listing)
 
