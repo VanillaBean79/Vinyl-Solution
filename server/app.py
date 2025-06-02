@@ -11,6 +11,7 @@ from models import User, Record, Listing, Favorite
 from flask import Flask
 from models import db
 from Resources.user import Signup, Login, Logout, CheckSession
+from Resources.record import Record
 
 
 # Initialize Flask app
@@ -35,6 +36,7 @@ api.add_resource(Signup, '/signup')
 api.add_resource(Login, '/login')
 api.add_resource(Logout, '/logout')
 api.add_resource(CheckSession, '/check_session')
+api.add_resource(Record, '/records')
 
 
 
