@@ -80,6 +80,7 @@ class CheckSession(Resource):
                     "condition": listing.condition,
                     "image_url": listing.image_url,
                     "listing_type": listing.listing_type.value,
+                    "description": listing.description,
                     "user": {
                         "id": listing.user.id,
                         "username": listing.user.username
@@ -90,7 +91,6 @@ class CheckSession(Resource):
                 "id": record.id,
                 "title": record.title,
                 "artist": record.artist,
-                "description": record.description,
                 "listings": listings_data
             })
 

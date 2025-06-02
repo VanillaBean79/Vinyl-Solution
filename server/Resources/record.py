@@ -8,7 +8,7 @@ from flask import request
 from flask_restful import Resource
 from models import db, Record
 
-class Records(Resource):
+class RecordResourc(Resource):
     def get(self):
         records = Record.query.all()
         return [record.to_dict(rules=('listings',)) for record in records], 200

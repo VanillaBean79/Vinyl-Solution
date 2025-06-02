@@ -3,7 +3,7 @@ from flask_restful import Resource
 from models import db, Listing
 
 
-class Listing(Resource):
+class ListingResource(Resource):
     def get(self):
         listings = Listing.query.all()
         return[listing.to_dict() for listing in listings], 201
@@ -23,7 +23,7 @@ class Listing(Resource):
             description=data.get('description'),
         )
         db.session.add(new_listing)
-        db.commit()
+        db.session.commit()
         
         return new_listing.to_dict(), 201
     
@@ -49,7 +49,7 @@ class ListingByID(Resource):
         
         data = request.get_json()
         
-        for field in ['price', 'location', 'condition', 'image_url', 'listying_type', 'description',]:
+        for field in ['price', 'location', 'condition', 'image_url', 'listing_type', 'description',]:
             if field in data:
                 setattr(listing, field, data[field])
                 
