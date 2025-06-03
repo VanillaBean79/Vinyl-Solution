@@ -13,6 +13,7 @@ from models import db
 from Resources.user import Signup, Login, Logout, CheckSession
 from Resources.record import RecordResource
 from Resources.listing import ListingResource, ListingByID
+from Resources.favorite import FavoritesResource, FavoriteById
 
 
 # Initialize Flask app
@@ -40,6 +41,9 @@ api.add_resource(CheckSession, '/check_session')
 api.add_resource(RecordResource, '/records')
 api.add_resource(ListingResource, '/listings')
 api.add_resource(ListingByID, '/listings/<int:id>')
+api.add_resource(FavoritesResource, '/favorites')
+api.add_resource(FavoriteById, '/favorites/<int:id>')
+
 
 
 
