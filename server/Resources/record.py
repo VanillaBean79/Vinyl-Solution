@@ -11,7 +11,7 @@ from models import db, Record
 class RecordResource(Resource):
     def get(self):
         records = Record.query.all()
-        return [record.to_dict('-listings.record',) for record in records], 200
+        return [record.to_dict(rules=('-listings.record',)) for record in records], 200
 
     def post(self):
         data = request.get_json()

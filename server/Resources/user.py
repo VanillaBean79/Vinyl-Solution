@@ -30,7 +30,7 @@ class Signup(Resource):
         #Store the user's ID in the session.
         session['user_id'] = user.id
         
-        return user.to_dict(rules=('-password_hash','-favorites.user', '-listings.user')), 201
+        return user.to_dict(), 201
     
     
 
@@ -41,7 +41,7 @@ class Login(Resource):
         
         if user and user.check_password(data.get('password')):
             session['user_id'] = user.id
-            return user.to_dict(rules=('-password_hash', '-favorites.user', '-listings.user')), 200
+            return user.to_dict(rules=('-password_hash', '-favorites.user', '-listings.user',)), 200
         
         return {'error': 'Invalid username or password'}, 401
         
@@ -79,7 +79,7 @@ class CheckSession(Resource):
                     "condition": listing.condition,
                     "image_url": listing.image_url,
                     "listing_type": listing.listing_type.value,
-                    "description": record.description if hasattr(record, 'description') else None,
+                    "description": listing.description,
                     "user": {
                         "id": listing.user.id,
                         "username": listing.user.username

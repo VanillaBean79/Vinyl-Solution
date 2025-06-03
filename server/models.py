@@ -38,9 +38,16 @@ class User(db.Model, SerializerMixin):
     favorites = relationship('Favorite', back_populates='user', cascade='all, delete-orphan')
     
     # Serialize rules
-    serialize_rules = ('-password_hash', 
-                       '-favorites.user', 
-                       '-listings.user',) 
+    serialize_rules = (
+    '-password_hash',
+    '-listings.user',
+    '-listings.record.listings',
+    '-listings.favorites.listing',
+    '-favorites.user',
+    '-favorites.listing.favorites',
+)
+
+ 
     
     # Password methods (set it and check it)
     def set_password(self, password):
@@ -82,7 +89,10 @@ class Record(db.Model, SerializerMixin):
     
     listings = relationship('Listing', back_populates='record', cascade='all, delete-orphan')
     
-    serialize_rules = ('-listings.record',)
+    serialize_rules = ('-listings.record',
+                       '-listings.user.listings',
+                       '-listings.favorites.listing',
+                       )
     
     
     @validates('title', 'artist')
@@ -115,6 +125,8 @@ class Listing(db.Model, SerializerMixin):
     serialize_rules = ('-user.listings', 
                        '-record.listings', 
                        '-favorites.listing',
+                       '-user.favorites',
+                       '-record.listings.record',
                        )
     
     
@@ -156,4 +168,7 @@ class Favorite(db.Model, SerializerMixin):
     )
     
     serialize_rules = ('-user.favorites', 
-                       '-listing.favorites',)
+                       '-listing.favorites',
+                       '-listing.user',
+                       '-listing.record',
+                       )

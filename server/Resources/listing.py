@@ -6,7 +6,20 @@ from models import db, Listing
 class ListingResource(Resource):
     def get(self):
         listings = Listing.query.all()
-        return[listing.to_dict(rules=('-user.listings', '-record.listings', '-favorites')) for listing in listings], 200
+        return[listing.to_dict(only=(
+        'id',
+        'price',
+        'location',
+        'condition',
+        'image_url',
+        'listing_type',
+        'description',
+        'user.id',
+        'user.username',
+        'record.id',
+        'record.title',
+        'record.artist'
+    )) for listing in listings], 200
     
     
     def post(self):
@@ -25,43 +38,64 @@ class ListingResource(Resource):
         db.session.add(new_listing)
         db.session.commit()
         
-        return new_listing.to_dict(rules=('-user.listings', '-record.listings', '-favorites')), 201
+        return new_listing.to_dict(), 201
     
     
     
 class ListingByID(Resource):
     def get(self, id):
-        
         listing = Listing.query.get(id)
-        
-        if listing:
-            return listing.to_dict(rules=('-user.listings', '-record.listings', '-favorites')), 200
-        else:
-            return {"message": "Lising not found."}
+
+        if not listing:
+            return {"message": "Listing not found."}, 404
+
+        # Manually serialize to avoid circular reference
+        data = {
+            "id": listing.id,
+            "price": str(listing.price),
+            "location": listing.location,
+            "condition": listing.condition,
+            "image_url": listing.image_url,
+            "listing_type": listing.listing_type.value,
+            "description": listing.description,
+            "user": {
+                "id": listing.user.id,
+                "username": listing.user.username,
+            },
+            "record": {
+                "id": listing.record.id,
+                "title": listing.record.title,
+                "artist": listing.record.artist,
+            },
+        }
+
+        return data, 200
+
         
         
     def patch(self, id):
         listing = Listing.query.get(id)
         if not listing:
-            return {"error": "Listing not found."}, 404
+            return {"message": "Listing not found"}, 404
 
         data = request.get_json()
-
         for field in ['price', 'location', 'condition', 'image_url', 'listing_type', 'description']:
             if field in data:
                 setattr(listing, field, data[field])
 
         db.session.commit()
-        return listing.to_dict(rules=('-user.listings', '-record.listings', '-favorites')), 200
+
+        # Serialize only flat fields to avoid recursion error
+        return listing.to_dict(only=('id', 'price', 'location', 'condition', 'image_url', 'listing_type', 'description')), 200
+
 
             
             
     def delete(self, id):
         listing = Listing.query.get(id)
         if not listing:
-            return {"error": "Listing not found."}
+            return {"message": "Listing not found."}, 404
         
         db.session.delete(listing)
         db.session.commit()
-        
-        return {}, 204
+        return {"message": f"Listing {id} deleted successfully."}, 200
