@@ -51,7 +51,8 @@ metadata = MetaData(naming_convention={
 migrate = Migrate(app, db)
 db.init_app(app)
 api = Api(app)
-CORS(app)
+CORS(app, origins=["http://localhost:3000"], supports_credentials=True)
+
 
 class GitHubLogin(Resource):
     def get(self):

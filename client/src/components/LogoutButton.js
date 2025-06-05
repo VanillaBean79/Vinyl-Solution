@@ -8,7 +8,7 @@ function LogoutButton() {
 
   function handleLogout() {
     logout();             // this calls the logout function from context
-    navigate('/login');   // redirect to login after logout
+    navigate('http://localhost:5555/login');   // redirect to login after logout
   }
 
   return (
