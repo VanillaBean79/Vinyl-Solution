@@ -1,29 +1,28 @@
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom'
-// import Home from './pages/Home'
-// import Profile from './pages/Profile'
-// import Listings from './pages/Listings'
-import LoginForm from './components/LoginForm'
-import SignupForm from './components/SignupForm';
-import { AuthProvider } from './context/AuthContext';
-// import ProtectedRoute from './components/ProtectedRoute'
-import React from 'react'
-import AuthTest from './components/AuthTest'
+// src/App.js
+import React from 'react';
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import Home from './pages/Home';
 import Profile from './pages/Profile';
+import UserListings from './pages/UserListings';
+import NewListing from './pages/NewListing';
+import LoginForm from './components/LoginForm';
+import SignupForm from './components/SignupForm';
+import AuthTest from './components/AuthTest';
 import ProtectedRoute from './components/ProtectedRoute';
-
-
-
+import Navbar from './components/Navbar';
+import { AuthProvider } from './context/AuthContext';
 
 function App() {
-  return(
+  return (
     <AuthProvider>
       <Router>
+        <Navbar />
         <Routes>
-          {/* <Route path="/" element={<Home />} /> */}
-          {/* <Route path="/listings" element={<Listings />} /> */}
-           <Route path="/login" element={<LoginForm />} />
+          <Route path="/" element={<Home />} />
+          <Route path="/login" element={<LoginForm />} />
           <Route path="/signup" element={<SignupForm />} />
           <Route path="/auth-test" element={<AuthTest />} />
+
           <Route
             path="/profile"
             element={
@@ -32,13 +31,26 @@ function App() {
               </ProtectedRoute>
             }
           />
-
+          <Route
+            path="/profile/listings"
+            element={
+              <ProtectedRoute>
+                <UserListings />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/profile/new-listing"
+            element={
+              <ProtectedRoute>
+                <NewListing />
+              </ProtectedRoute>
+            }
+          />
         </Routes>
       </Router>
     </AuthProvider>
-  )
+  );
 }
 
-
-export default App
-
+export default App;
