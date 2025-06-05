@@ -1,6 +1,8 @@
 import React, { useState, useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { AuthContext } from '../context/AuthContext';
+import GitHubLoginButton from './GitHubLoginButton';
+
 
 function LoginForm() {
   const { login } = useContext(AuthContext);
@@ -22,13 +24,13 @@ function LoginForm() {
 
   function handleSubmit(e) {
     e.preventDefault();
-    fetch('/login', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(formData),
-    }).then((res) => {
+    fetch('http://localhost:5555/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',  // << Add this
+        body: JSON.stringify(formData),
+        })
+    .then((res) => {
       if (res.ok) {
         res.json().then((user) => {
           login(user);               // updates AuthContext
@@ -72,6 +74,7 @@ function LoginForm() {
       <br />
 
       <button type="submit">Log In</button>
+      <GitHubLoginButton />
     </form>
   );
 }

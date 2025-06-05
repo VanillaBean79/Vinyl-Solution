@@ -64,8 +64,12 @@ class GitHubAuth(Resource):
         token = github.authorize_access_token()
         resp = github.get('user')
         user = resp.json()
-        session['user'] = user
-        return redirect('/profile')
+        session['user'] = {
+            'username': user['login'],
+            'email': user.get('email', ''),
+        }
+        return redirect("http://localhost:3000/profile")  # <-- redirect to frontend
+
     
     
 class GitHubProfile(Resource):

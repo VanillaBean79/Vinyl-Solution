@@ -8,6 +8,11 @@ import { AuthProvider } from './context/AuthContext';
 // import ProtectedRoute from './components/ProtectedRoute'
 import React from 'react'
 import AuthTest from './components/AuthTest'
+import Profile from './pages/Profile';
+import ProtectedRoute from './components/ProtectedRoute';
+
+
+
 
 function App() {
   return(
@@ -19,12 +24,15 @@ function App() {
            <Route path="/login" element={<LoginForm />} />
           <Route path="/signup" element={<SignupForm />} />
           <Route path="/auth-test" element={<AuthTest />} />
+          <Route
+            path="/profile"
+            element={
+              <ProtectedRoute>
+                <Profile />
+              </ProtectedRoute>
+            }
+          />
 
-          {/* <Route path="/profile" element={
-            <ProtectedRoute>
-              <Profile />
-            </ProtectedRoute> */}
-          {/* } /> */}
         </Routes>
       </Router>
     </AuthProvider>
