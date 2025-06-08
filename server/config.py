@@ -1,29 +1,25 @@
 # config.py
-
 import os
 
-# Base directory path for file-based databases like SQLite
+# Absolute path to current directory (where config.py lives)
 BASE_DIR = os.path.abspath(os.path.dirname(__file__))
 
+# Final path to the SQLite DB file
+DB_PATH = os.path.join(BASE_DIR, 'app.db')
+DB_URI = f"sqlite:///{DB_PATH}"
+
 class Config:
-    """Base config class with default settings."""
     SECRET_KEY = os.environ.get('SECRET_KEY', 'super_secret_key')
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     JSON_COMPACT = False
 
 class DevelopmentConfig(Config):
-    """Settings for local development."""
-    SQLALCHEMY_DATABASE_URI = os.environ.get(
-        'DATABASE_URL',
-        'sqlite:///' + os.path.join(BASE_DIR, 'app.db')
-    )
+    SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL', DB_URI)
     DEBUG = True
 
 class ProductionConfig(Config):
-    """Settings for deployment (Heroku, Render, etc.)."""
-    SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL')  # set this in prod
+    SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL')
     DEBUG = False
     JSON_COMPACT = True
 
-
-print("Using DB at:", 'sqlite:///' + os.path.join(BASE_DIR, 'app.db'))
+print("🔧 Using DB at:", DB_URI)

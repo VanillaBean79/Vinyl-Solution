@@ -1,102 +1,121 @@
 from flask import request, session
 from flask_restful import Resource
-from models import User
-from models import db
-
+from models import User, db
 
 
 class Signup(Resource):
     def post(self):
-        
-        #retrieve imput from user
         data = request.get_json()
-        
-        #check to see if the username is already being used.
-        if User.query.filter_by(username = data['username']).first():
+
+        # Check for existing username
+        if User.query.filter_by(username=data['username']).first():
             return {'error': 'Username already taken.'}, 409
-        
-        #create a new user instance.
+
         user = User(
-            username = data['username'],
-            email = data['email'],
+            username=data['username'],
+            email=data['email']
         )
-        #set password securely.
         user.set_password(data['password'])
-        
-        
+
         db.session.add(user)
         db.session.commit()
-        
-        #Store the user's ID in the session.
+
         session['user_id'] = user.id
-        
+
         return user.to_dict(), 201
-    
-    
+
 
 class Login(Resource):
     def post(self):
         data = request.get_json()
         user = User.query.filter_by(username=data.get('username')).first()
-        
+
         if user and user.check_password(data.get('password')):
             session['user_id'] = user.id
-            return user.to_dict(rules=('-password_hash', '-favorites.user', '-listings.user',)), 200
-        
+            return user.to_dict(
+                rules=(
+                    '-password_hash',
+                    '-favorites.user',
+                    '-favorites.listing.favorites',
+                    '-listings.user',
+                    '-listings.favorites'
+                )
+            ), 200
+
         return {'error': 'Invalid username or password'}, 401
-        
-        
-        
+
+
 class Logout(Resource):
     def delete(self):
         session.pop('user_id', None)
-        return{}, 204
+        return {}, 204
+
+
+class UserListResource(Resource):
+    def get(self):
+        users = User.query.all()
+        users_data = [
+            {
+                "id": user.id,
+                "username": user.username,
+                "email": user.email
+            }
+            for user in users
+        ]
+        return users_data, 200
+
+
+
+        
     
     
 
 class CheckSession(Resource):
     def get(self):
-        # Traditional user (from your DB)
         if 'user_id' in session:
             user = User.query.get(session['user_id'])
             if user:
-                # Build record data with nested listings
-                records_set = {listing.record for listing in user.listings}
-                records_data = []
+                # Gather records through user's listings
+                records_dict = {}
+                
+                for listing in user.listings:
+                    record = listing.record
+                    record_id = record.id
+                    
+                    listing_data = {
+                        "id": listing.id,
+                        "price": str(listing.price),
+                        "location": listing.location,
+                        "condition": listing.condition,
+                        "image_url": listing.image_url,
+                        "listing_type": listing.listing_type.value,
+                        "description": listing.description,
+                        "user": {
+                            "id": user.id,
+                            "username": user.username
+                        }
+                    }
 
-                for record in records_set:
-                    listings_data = []
-                    for listing in record.listings:
-                        listings_data.append({
-                            "id": listing.id,
-                            "price": str(listing.price),
-                            "location": listing.location,
-                            "condition": listing.condition,
-                            "image_url": listing.image_url,
-                            "listing_type": listing.listing_type.value,
-                            "description": listing.description,
-                            "user": {
-                                "id": listing.user.id,
-                                "username": listing.user.username
-                            }
-                        })
-
-                    records_data.append({
-                        "id": record.id,
-                        "title": record.title,
-                        "artist": record.artist,
-                        "listings": listings_data
-                    })
+                    if record_id not in records_dict:
+                        records_dict[record_id] = {
+                            "id": record.id,
+                            "title": record.title,
+                            "artist": record.artist,
+                            "listings": [listing_data]
+                        }
+                    else:
+                        records_dict[record_id]["listings"].append(listing_data)
 
                 return {
                     "id": user.id,
                     "username": user.username,
                     "email": user.email,
-                    "records": records_data
+                    "records": list(records_dict.values())
                 }, 200
 
-        # GitHub user (from session)
         elif 'user' in session:
+            # GitHub OAuth user session
             return session['user'], 200
 
         return {'error': 'Not logged in'}, 401
+

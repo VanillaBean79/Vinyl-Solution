@@ -13,12 +13,34 @@ def get_current_user():
 
 class FavoritesResource(Resource):
     def get(self):
-        user = get_current_user()
-        if not user:
-            return {"error": "Unauthorized"}, 401
+        favorites = Favorite.query.all()
+        favorites_data = []
 
-        favorites = Favorite.query.filter_by(user_id=user.id).all()
-        return [fav.to_dict() for fav in favorites], 200
+        for favorite in favorites:
+            favorites_data.append({
+                "id": favorite.id,
+                "user": {
+                    "id": favorite.user.id,
+                    "username": favorite.user.username
+                },
+                "listing": {
+                    "id": favorite.listing.id,
+                    "price": str(favorite.listing.price),
+                    "location": favorite.listing.location,
+                    "condition": favorite.listing.condition,
+                    "image_url": favorite.listing.image_url,
+                    "listing_type": favorite.listing.listing_type.value,
+                    "description": favorite.listing.description,
+                    "record": {
+                        "id": favorite.listing.record.id,
+                        "title": favorite.listing.record.title,
+                        "artist": favorite.listing.record.artist
+                    }
+                }
+            })
+
+        return favorites_data, 200
+
     
     
     def post(self):
@@ -51,20 +73,34 @@ class FavoritesResource(Resource):
         return favorite.to_dict(), 201
     
     
+    
+    
 class FavoriteById(Resource):
-    def delete(self, id):
-        user = get_current_user()
-        if not user:
-            return {"error": "Unauthorized"}, 401
-
+    def get(self, id):
         favorite = Favorite.query.get(id)
         if not favorite:
             return {"error": "Favorite not found"}, 404
 
-        if favorite.user_id != user.id:
-            return {"error": "Forbidden"}, 403
+        return {
+            "id": favorite.id,
+            "user": {
+                "id": favorite.user.id,
+                "username": favorite.user.username
+            },
+            "listing": {
+                "id": favorite.listing.id,
+                "price": str(favorite.listing.price),
+                "location": favorite.listing.location,
+                "condition": favorite.listing.condition,
+                "image_url": favorite.listing.image_url,
+                "listing_type": favorite.listing.listing_type.value,
+                "description": favorite.listing.description,
+                "record": {
+                    "id": favorite.listing.record.id,
+                    "title": favorite.listing.record.title,
+                    "artist": favorite.listing.record.artist
+                }
+            }
+        }, 200
 
-        db.session.delete(favorite)
-        db.session.commit()
-        return {"message": "Favorite removed"}, 200
         

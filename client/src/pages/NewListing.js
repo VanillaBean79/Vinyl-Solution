@@ -1,4 +1,3 @@
-// src/pages/NewListing.js
 import React, { useContext, useState } from 'react';
 import { AuthContext } from '../context/AuthContext';
 
@@ -16,10 +15,11 @@ function NewListing() {
     image_url: '',
   });
 
+  const [uploading, setUploading] = useState(false);
+  const [uploadError, setUploadError] = useState(null);
+
   function refreshUser() {
-    fetch('http://localhost:5555/check_session', {
-      credentials: 'include',
-    })
+    fetch('http://localhost:5555/check_session', { credentials: 'include' })
       .then((res) => res.json())
       .then(login);
   }
@@ -27,6 +27,35 @@ function NewListing() {
   function handleChange(e) {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
+  }
+
+  // Handle image file selection & upload
+  async function handleImageChange(e) {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    setUploading(true);
+    setUploadError(null);
+
+    const formDataToSend = new FormData();
+    formDataToSend.append('image', file);
+
+    try {
+      const res = await fetch('http://localhost:5555/upload_image', {
+        method: 'POST',
+        credentials: 'include',
+        body: formDataToSend,
+      });
+
+      if (!res.ok) throw new Error('Image upload failed');
+
+      const data = await res.json();
+      setFormData((prev) => ({ ...prev, image_url: data.image_url }));
+    } catch (err) {
+      setUploadError(err.message);
+    } finally {
+      setUploading(false);
+    }
   }
 
   function handleSubmit(e) {
@@ -113,13 +142,36 @@ function NewListing() {
           onChange={handleChange}
           placeholder="Description"
         />
-        <input
-          name="image_url"
-          value={formData.image_url}
-          onChange={handleChange}
-          placeholder="Image URL"
-        />
-        <button type="submit">Add Listing</button>
+
+        {/* New file input for image */}
+        <label>
+          Upload Photo (optional):
+          <input
+            type="file"
+            accept="image/*"
+            capture="environment"  // allows using camera on phones
+            onChange={handleImageChange}
+          />
+        </label>
+
+        {uploading && <p>Uploading image...</p>}
+        {uploadError && <p style={{ color: 'red' }}>{uploadError}</p>}
+
+        {/* Preview uploaded image */}
+        {formData.image_url && (
+          <div>
+            <p>Uploaded Image Preview:</p>
+            <img
+              src={formData.image_url}
+              alt="Uploaded preview"
+              style={{ maxWidth: '200px', maxHeight: '200px', objectFit: 'contain' }}
+            />
+          </div>
+        )}
+
+        <button type="submit" disabled={uploading}>
+          Add Listing
+        </button>
       </form>
     </div>
   );
