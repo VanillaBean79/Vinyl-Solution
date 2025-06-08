@@ -3,23 +3,35 @@ from flask_restful import Resource
 from models import db, Listing, Record
 
 
+from flask_restful import Resource
+from models import Listing
+
 class ListingResource(Resource):
     def get(self):
         listings = Listing.query.all()
-        return [listing.to_dict(only=(
-            'id',
-            'price',
-            'location',
-            'condition',
-            'image_url',
-            'listing_type',
-            'description',
-            'user.id',
-            'user.username',
-            'record.id',
-            'record.title',
-            'record.artist'
-        )) for listing in listings], 200
+        result = []
+
+        for listing in listings:
+            result.append({
+                "id": listing.id,
+                "price": str(listing.price),
+                "location": listing.location,
+                "condition": listing.condition,
+                "image_url": listing.image_url,
+                "listing_type": listing.listing_type.value,
+                "description": listing.description,
+                "user": {
+                    "id": listing.user.id,
+                    "username": listing.user.username
+                },
+                "record": {
+                    "id": listing.record.id,
+                    "title": listing.record.title,
+                    "artist": listing.record.artist
+                }
+            })
+
+        return result, 200
 
     def post(self):
         data = request.get_json()

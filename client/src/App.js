@@ -11,6 +11,7 @@ import AuthTest from './components/AuthTest';
 import ProtectedRoute from './components/ProtectedRoute';
 import Navbar from './components/Navbar';
 import { AuthProvider } from './context/AuthContext';
+import Cart from './pages/Cart'
 
 function App() {
   return (
@@ -47,6 +48,7 @@ function App() {
               </ProtectedRoute>
             }
           />
+          <Route path="/cart" element={<Cart />} />
         </Routes>
       </Router>
     </AuthProvider>
