@@ -12,10 +12,13 @@ function Home() {
     addToCart(listing)
   }
 
-  useEffect(()=>{
-    fetch('http://localhost:5555/listings')
+  useEffect(() => {
+  fetch('http://localhost:5555/listings')
     .then(res => res.json())
-    .then(data => setListings(data))
+    .then(data => {
+      console.log('Fetched listings:', data); // <- Add this line
+      setListings(data);
+    })
     .catch(err => console.error('Error fetching listings:', err))
   }, [])
 
@@ -44,10 +47,15 @@ function Home() {
         {listings.map(listing => (
           <div key={listing.id} style={styles.card}>
             <img
-              src={listing.image_url}
-              alt={listing.record.title}
+              src={listing.image_url || '/default-album-cover.jpg'}
+              onError={(e) => { 
+                e.target.onerror = null; 
+                e.target.src = '/default-album-cover.jpg'; 
+              }}
+              alt={listing.record?.title || 'Album Cover'}
               style={{ width: '100%', height: '200px', objectFit: 'cover' }}
             />
+
             <h3>{listing.record.title} by {listing.record.artist}</h3>
             <p><strong>Condition:</strong> {listing.condition}</p>
             <p><strong>Price:</strong> ${listing.price}</p>
