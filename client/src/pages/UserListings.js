@@ -85,7 +85,7 @@ function UserListings() {
               {listing.recordTitle} by {listing.recordArtist}
             </h3>
             {editingId === listing.id ? (
-              <form onSubmit={handleEditSubmit} style={{ display: 'flex', gap: '0.5rem' }}>
+              <form onSubmit={handleEditSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
                 <input
                   name="price"
                   type="number"
@@ -93,17 +93,51 @@ function UserListings() {
                   onChange={handleEditChange}
                   placeholder="Price"
                   required
-                  style={{ flex: '1' }}
                 />
-                <button type="submit">Save</button>
-                <button
-                  type="button"
-                  onClick={() => setEditingId(null)}
-                  style={{ backgroundColor: '#f44336', color: '#fff' }}
-                >
-                  Cancel
-                </button>
+                <input
+                  name="location"
+                  type="text"
+                  value={editData.location}
+                  onChange={handleEditChange}
+                  placeholder="Location"
+                />
+                <input
+                  name="condition"
+                  type="text"
+                  value={editData.condition}
+                  onChange={handleEditChange}
+                  placeholder="Condition"
+                />
+                <select name="listing_type" value={editData.listing_type} onChange={handleEditChange}>
+                  <option value="sale">Sale</option>
+                  <option value="trade">Trade</option>
+                  <option value="both">Both</option>
+                </select>
+                <input
+                  name="image_url"
+                  type="text"
+                  value={editData.image_url}
+                  onChange={handleEditChange}
+                  placeholder="Image URL"
+                />
+                <textarea
+                  name="description"
+                  value={editData.description}
+                  onChange={handleEditChange}
+                  placeholder="Description"
+                />
+                <div>
+                  <button type="submit">Save</button>
+                  <button
+                    type="button"
+                    onClick={() => setEditingId(null)}
+                    style={{ backgroundColor: '#f44336', color: '#fff', marginLeft: '0.5rem' }}
+                  >
+                    Cancel
+                  </button>
+                </div>
               </form>
+
             ) : (
               <>
                 <p>
