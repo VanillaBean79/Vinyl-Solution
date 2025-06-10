@@ -8,7 +8,7 @@ export const AuthProvider = ({ children }) => {
 
   // Check session on initial load
   useEffect(() => {
-    fetch('/check_session')
+    fetch('/check_session', { credentials: 'include' }) 
       .then((res) => {
         if (res.ok) {
           return res.json().then(setCurrentUser);
@@ -22,7 +22,7 @@ export const AuthProvider = ({ children }) => {
   };
 
   const logout = () => {
-    fetch('/logout', { method: 'DELETE' })
+    fetch('/logout', { method: 'DELETE', credentials: 'include' })
       .then(() => setCurrentUser(null))
       .catch((err) => console.error('Logout error:', err));
   };

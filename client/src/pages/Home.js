@@ -9,7 +9,7 @@ function Home() {
   const [listings, setListings] = useState([]);
 
   useEffect(() => {
-    fetch('http://localhost:5555/listings')
+    fetch('/listings', {credential: 'include'})
       .then(res => res.json())
       .then(data => {
         console.log('Fetched listings:', data);
@@ -25,7 +25,7 @@ function Home() {
   const handleAddToFavorites = (listingId) => {
     if (!currentUser) return;
 
-    fetch('http://localhost:5555/favorites', {
+    fetch('/favorites', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       credentials: 'include',

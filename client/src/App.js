@@ -10,14 +10,14 @@ import SignupForm from './components/SignupForm';
 import AuthTest from './components/AuthTest';
 import ProtectedRoute from './components/ProtectedRoute';
 import Navbar from './components/Navbar';
-import { AuthProvider } from './context/AuthContext';
+
 import Cart from './pages/Cart'
 import Favorites from './components/Favorites'; // adjust the path if it's elsewhere
 
 
 function App() {
   return (
-    <AuthProvider>
+    
       <Router>
         <Navbar />
         <Routes>
@@ -55,7 +55,7 @@ function App() {
 
         </Routes>
       </Router>
-    </AuthProvider>
+    
   );
 }
 

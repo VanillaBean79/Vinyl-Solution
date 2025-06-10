@@ -17,9 +17,10 @@ function NewListing() {
 
   const [uploading, setUploading] = useState(false);
   const [uploadError, setUploadError] = useState(null);
+  const [submitError, setSubmitError] = useState(null);
 
   function refreshUser() {
-    fetch('http://localhost:5555/check_session', { credentials: 'include' })
+    fetch('/check_session', { credentials: 'include' })
       .then((res) => res.json())
       .then(login);
   }
@@ -41,7 +42,7 @@ function NewListing() {
     formDataToSend.append('image', file);
 
     try {
-      const res = await fetch('http://localhost:5555/upload_image', {
+      const res = await fetch('/upload_image', {
         method: 'POST',
         credentials: 'include',
         body: formDataToSend,
@@ -58,8 +59,9 @@ function NewListing() {
     }
   }
 
-  function handleSubmit(e) {
+  async function handleSubmit(e) {
     e.preventDefault();
+    setSubmitError(null);
 
     const payload = {
       ...formData,
@@ -67,12 +69,14 @@ function NewListing() {
       price: parseFloat(formData.price),
     };
 
-    fetch('http://localhost:5555/listings', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      credentials: 'include',
-      body: JSON.stringify(payload),
-    }).then((res) => {
+    try {
+      const res = await fetch('/listings', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify(payload),
+      });
+
       if (res.ok) {
         setFormData({
           title: '',
@@ -86,9 +90,12 @@ function NewListing() {
         });
         refreshUser();
       } else {
-        alert('Failed to create listing.');
+        const errorData = await res.json();
+        setSubmitError(errorData.error || 'Failed to create listing.');
       }
-    });
+    } catch {
+      setSubmitError('Network error. Please try again.');
+    }
   }
 
   if (!currentUser) return <p>Loading user...</p>;
@@ -96,7 +103,10 @@ function NewListing() {
   return (
     <div style={{ padding: '2rem' }}>
       <h2>Create a New Listing</h2>
-      <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+      <form
+        onSubmit={handleSubmit}
+        style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}
+      >
         <input
           name="title"
           value={formData.title}
@@ -131,7 +141,11 @@ function NewListing() {
           onChange={handleChange}
           placeholder="Condition"
         />
-        <select name="listing_type" value={formData.listing_type} onChange={handleChange}>
+        <select
+          name="listing_type"
+          value={formData.listing_type}
+          onChange={handleChange}
+        >
           <option value="SALE">Sale</option>
           <option value="TRADE">Trade</option>
           <option value="Both">Both</option>
@@ -143,21 +157,21 @@ function NewListing() {
           placeholder="Description"
         />
 
-        {/* New file input for image */}
+        {/* allows using camera on phones */}
         <label>
           Upload Photo (optional):
           <input
             type="file"
             accept="image/*"
-            capture="environment"  // allows using camera on phones
+            capture="environment"
             onChange={handleImageChange}
           />
         </label>
 
         {uploading && <p>Uploading image...</p>}
         {uploadError && <p style={{ color: 'red' }}>{uploadError}</p>}
+        {submitError && <p style={{ color: 'red' }}>{submitError}</p>}
 
-        {/* Preview uploaded image */}
         {formData.image_url && (
           <div>
             <p>Uploaded Image Preview:</p>

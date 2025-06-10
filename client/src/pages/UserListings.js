@@ -8,7 +8,7 @@ function UserListings() {
   const [userListings, setUserListings] = useState([]);
 
   function refreshUser() {
-    fetch('http://localhost:5555/check_session', { credentials: 'include' })
+    fetch('/check_session', { credentials: 'include' })
       .then((res) => res.json())
       .then(login);
   }
@@ -37,7 +37,7 @@ function UserListings() {
 
   function handleEditSubmit(e) {
     e.preventDefault();
-    fetch(`http://localhost:5555/listings/${editingId}`, {
+    fetch(`/listings/${editingId}`, {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
       credentials: 'include',
@@ -54,7 +54,7 @@ function UserListings() {
 
   function handleDelete(listingId) {
     if (!window.confirm('Are you sure?')) return;
-    fetch(`http://localhost:5555/listings/${listingId}`, {
+    fetch(`/listings/${listingId}`, {
       method: 'DELETE',
       credentials: 'include',
     }).then((res) => {

@@ -21,9 +21,10 @@ function SignupForm() {
   function handleSubmit(e) {
     e.preventDefault();
 
-    fetch('http://localhost:5555/signup', {
+    fetch('/signup', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
       body: JSON.stringify(formData),
     })
       .then((r) => {

@@ -7,7 +7,7 @@ function GitHubLoginButton() {
   const handleGitHubLogin = () => {
     if (!clicked) {
       setClicked(true);
-      window.location.href = 'http://localhost:5555/login/github';
+      window.location.href = 'http://localhost:5555/login/github'; // 🔥 updated
     }
   };
 
@@ -18,4 +18,4 @@ function GitHubLoginButton() {
   );
 }
 
-export default GitHubLoginButton
+export default GitHubLoginButton;

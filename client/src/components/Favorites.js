@@ -7,7 +7,7 @@ function Favorites() {
 
   useEffect(() => {
     if (currentUser) {
-      fetch(`http://localhost:5555/users/${currentUser.id}`, {
+      fetch(`/users/${currentUser.id}`, {
         credentials: 'include'
       })
         .then(res => res.json())

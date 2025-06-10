@@ -3,6 +3,11 @@ import time
 from flask import Flask, redirect, url_for, session, request, jsonify, send_from_directory
 from authlib.integrations.flask_client import OAuth
 from dotenv import load_dotenv
+import os
+import time
+from flask import Flask, redirect, url_for, session, request, jsonify, send_from_directory
+from authlib.integrations.flask_client import OAuth
+from dotenv import load_dotenv
 from flask_cors import CORS
 from flask_migrate import Migrate
 from flask_restful import Api, Resource
@@ -10,7 +15,7 @@ from werkzeug.utils import secure_filename
 from flask_session import Session
 
 from config import DevelopmentConfig
-from models import db
+from models import db, User  # Make sure User is imported
 from Resources.user import Signup, Login, Logout, CheckSession, UserListResource, UserById
 from Resources.record import RecordResource
 from Resources.listing import ListingResource, ListingByID
@@ -63,7 +68,7 @@ def create_app(config_class=DevelopmentConfig):
         def get(self):
             print("🔐 GitHubLogin session before redirect:", dict(session))
 
-            # ✅ CLEAR old GitHub state tokens to prevent CSRF mismatch
+            # Clear old GitHub state tokens to prevent CSRF mismatch
             for key in list(session.keys()):
                 if key.startswith('_state_github_'):
                     session.pop(key)
@@ -73,7 +78,6 @@ def create_app(config_class=DevelopmentConfig):
             print("🔐 GitHubLogin session AFTER redirect call:", dict(session))
             return resp
 
-
     class GitHubAuth(Resource):
         def get(self):
             print("🔐 GitHubAuth session on return:", dict(session))
@@ -81,10 +85,27 @@ def create_app(config_class=DevelopmentConfig):
             _ = token  # suppress unused warning
 
             user_data = github.get('user').json()
+            username = user_data['login']
+            email = user_data.get('email')
+
+            # Lookup user in DB by username
+            user = User.query.filter_by(username=username).first()
+
+            # If user does not exist, create one
+            if not user:
+                user = User(username=username, email=email)
+                db.session.add(user)
+                db.session.commit()
+
+            # Store user_id and user info in session for authentication
+            session['user_id'] = user.id
             session['user'] = {
-                'username': user_data['login'],
-                'email': user_data.get('email', ''),
+                'username': user.username,
+                'email': user.email or '',
             }
+
+            print("🔐 GitHubAuth session after setting user:", dict(session))
+
             return redirect("http://localhost:3000/profile")
 
     class GitHubProfile(Resource):
