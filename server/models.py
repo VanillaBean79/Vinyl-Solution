@@ -74,8 +74,8 @@ class Record(db.Model, SerializerMixin):
     serialize_rules = (
         '-listings.record',
         '-listings.user.listings',
-        '-listings.favorites.listing',
         '-listings.user.favorites',
+        '-listings.favorites',
     )
 
     @validates('title', 'artist')
@@ -144,7 +144,8 @@ class Favorite(db.Model, SerializerMixin):
     serialize_rules = (
         '-user.favorites',
         '-listing.favorites',
+        '-listing.user.favorites',
         '-listing.user.listings',
         '-listing.record.listings',
-        '-listing.user.favorites',
     )
+

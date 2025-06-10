@@ -2,15 +2,20 @@
 import React from 'react';
 
 function GitHubLoginButton() {
+  const [clicked, setClicked] = React.useState(false);
+
   const handleGitHubLogin = () => {
-    window.location.href = 'http://localhost:5555/login/github';
+    if (!clicked) {
+      setClicked(true);
+      window.location.href = 'http://localhost:5555/login/github';
+    }
   };
 
   return (
-    <button onClick={handleGitHubLogin} style={{ marginTop: '10px' }}>
+    <button onClick={handleGitHubLogin} disabled={clicked}>
       Login with GitHub
     </button>
   );
 }
 
-export default GitHubLoginButton;
+export default GitHubLoginButton

@@ -1,26 +1,42 @@
 import React, { useContext, useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { AuthContext } from '../context/AuthContext';
-import { CartContext } from '../context/CartContext'
+import { CartContext } from '../context/CartContext';
 
 function Home() {
   const { currentUser } = useContext(AuthContext);
-  const [ listings, setListings] = useState([])
-  const { addToCart } = useContext(CartContext)
-
-  const handleAddToCart = (listing) => {
-    addToCart(listing)
-  }
+  const { addToCart } = useContext(CartContext);
+  const [listings, setListings] = useState([]);
 
   useEffect(() => {
-  fetch('http://localhost:5555/listings')
-    .then(res => res.json())
-    .then(data => {
-      console.log('Fetched listings:', data); // <- Add this line
-      setListings(data);
+    fetch('http://localhost:5555/listings')
+      .then(res => res.json())
+      .then(data => {
+        console.log('Fetched listings:', data);
+        setListings(data);
+      })
+      .catch(err => console.error('Error fetching listings:', err));
+  }, []);
+
+  const handleAddToCart = (listing) => {
+    addToCart(listing);
+  };
+
+  const handleAddToFavorites = (listingId) => {
+    if (!currentUser) return;
+
+    fetch('http://localhost:5555/favorites', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
+      body: JSON.stringify({ user_id: currentUser.id, listing_id: listingId }),
     })
-    .catch(err => console.error('Error fetching listings:', err))
-  }, [])
+      .then(res => res.json())
+      .then(data => {
+        alert(data.message || 'Listing favorited!');
+      })
+      .catch(err => console.error('Error favoriting listing:', err));
+  };
 
   return (
     <div style={{ padding: '2rem' }}>
@@ -48,9 +64,9 @@ function Home() {
           <div key={listing.id} style={styles.card}>
             <img
               src={listing.image_url || '/default-album-cover.jpg'}
-              onError={(e) => { 
-                e.target.onerror = null; 
-                e.target.src = '/default-album-cover.jpg'; 
+              onError={(e) => {
+                e.target.onerror = null;
+                e.target.src = '/default-album-cover.jpg';
               }}
               alt={listing.record?.title || 'Album Cover'}
               style={{ width: '100%', height: '200px', objectFit: 'cover' }}
@@ -61,14 +77,21 @@ function Home() {
             <p><strong>Price:</strong> ${listing.price}</p>
             <p><strong>Seller:</strong> {listing.user.username}</p>
 
-            {/* Show purchase button only if logged in */}
             {currentUser && (
-              <button
-                style={styles.purchaseButton}
-                onClick={() => handleAddToCart(listing)}
-              >
-                Add to Cart
-              </button>
+              <>
+                <button
+                  style={styles.purchaseButton}
+                  onClick={() => handleAddToCart(listing)}
+                >
+                  Add to Cart
+                </button>
+                <button
+                  style={styles.favoriteButton}
+                  onClick={() => handleAddToFavorites(listing.id)}
+                >
+                  ❤️ Favorite
+                </button>
+              </>
             )}
           </div>
         ))}
@@ -98,17 +121,25 @@ const styles = {
     borderRadius: '6px',
     backgroundColor: '#fafafa',
   },
-
   purchaseButton: {
-  marginTop: '1rem',
-  padding: '0.5rem 1rem',
-  backgroundColor: '#008080',
-  color: '#fff',
-  border: 'none',
-  borderRadius: '4px',
-  cursor: 'pointer',
-}
-
+    marginTop: '1rem',
+    padding: '0.5rem 1rem',
+    backgroundColor: '#008080',
+    color: '#fff',
+    border: 'none',
+    borderRadius: '4px',
+    cursor: 'pointer',
+    marginRight: '0.5rem',
+  },
+  favoriteButton: {
+    marginTop: '1rem',
+    padding: '0.5rem 1rem',
+    backgroundColor: '#f06292',
+    color: '#fff',
+    border: 'none',
+    borderRadius: '4px',
+    cursor: 'pointer',
+  },
 };
 
 export default Home;

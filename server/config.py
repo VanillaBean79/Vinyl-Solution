@@ -17,6 +17,17 @@ class DevelopmentConfig(Config):
     SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL', DB_URI)
     DEBUG = True
 
+    # Flask-Session configs
+    SESSION_TYPE = 'filesystem'
+    SESSION_PERMANENT = False
+    SESSION_USE_SIGNER = True
+    SESSION_COOKIE_NAME = 'vinyl_session'
+    SESSION_COOKIE_SAMESITE = 'Lax'  # <- VERY important
+    SESSION_COOKIE_SECURE = False   # <- True only in production with HTTPS
+
+    
+
+
 class ProductionConfig(Config):
     SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL')
     DEBUG = False

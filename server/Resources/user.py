@@ -1,6 +1,8 @@
 from flask import request, session
 from flask_restful import Resource
-from models import User, db
+from models import User, db, Listing
+from sqlalchemy.orm import joinedload
+
 
 
 class Signup(Resource):
@@ -67,55 +69,51 @@ class UserListResource(Resource):
 
 
         
-    
-    
-
 class CheckSession(Resource):
     def get(self):
         if 'user_id' in session:
-            user = User.query.get(session['user_id'])
-            if user:
-                # Gather records through user's listings
-                records_dict = {}
-                
-                for listing in user.listings:
-                    record = listing.record
-                    record_id = record.id
-                    
-                    listing_data = {
-                        "id": listing.id,
-                        "price": str(listing.price),
-                        "location": listing.location,
-                        "condition": listing.condition,
-                        "image_url": listing.image_url,
-                        "listing_type": listing.listing_type.value,
-                        "description": listing.description,
-                        "user": {
-                            "id": user.id,
-                            "username": user.username
-                        }
+            user = User.query.options(
+                joinedload(User.listings).joinedload(Listing.record)  # ✅ FIX: use class-bound attribute
+            ).get(session['user_id'])
+
+            if not user:
+                return {'error': 'User not found'}, 404
+
+            records_dict = {}
+
+            for listing in user.listings:
+                record = listing.record
+                record_id = record.id
+
+                listing_data = {
+                    "id": listing.id,
+                    "price": str(listing.price),
+                    "location": listing.location,
+                    "condition": listing.condition,
+                    "image_url": listing.image_url,
+                    "listing_type": listing.listing_type.value,
+                    "description": listing.description,
+                    "user": {
+                        "id": user.id,
+                        "username": user.username
                     }
+                }
 
-                    if record_id not in records_dict:
-                        records_dict[record_id] = {
-                            "id": record.id,
-                            "title": record.title,
-                            "artist": record.artist,
-                            "listings": [listing_data]
-                        }
-                    else:
-                        records_dict[record_id]["listings"].append(listing_data)
+                if record_id not in records_dict:
+                    records_dict[record_id] = {
+                        "id": record.id,
+                        "title": record.title,
+                        "artist": record.artist,
+                        "listings": [listing_data]
+                    }
+                else:
+                    records_dict[record_id]["listings"].append(listing_data)
 
-                return {
-                    "id": user.id,
-                    "username": user.username,
-                    "email": user.email,
-                    "records": list(records_dict.values())
-                }, 200
-
-        elif 'user' in session:
-            # GitHub OAuth user session
-            return session['user'], 200
+            return {
+                "id": user.id,
+                "username": user.username,
+                "email": user.email,
+                "records": list(records_dict.values())
+            }, 200
 
         return {'error': 'Not logged in'}, 401
-
