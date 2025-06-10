@@ -22,7 +22,7 @@ class DevelopmentConfig(Config):
     SESSION_PERMANENT = False
     SESSION_USE_SIGNER = True
     SESSION_COOKIE_NAME = 'vinyl_session'
-    SESSION_COOKIE_SAMESITE = 'None'  # <- VERY important
+    SESSION_COOKIE_SAMESITE = 'Lax'  # <- VERY important
     SESSION_COOKIE_SECURE = False   # <- True only in production with HTTPS
 
     

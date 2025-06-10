@@ -55,8 +55,12 @@ class User(db.Model, SerializerMixin):
 
     @validates('email')
     def validate_email(self, key, value):
+        if value is None:
+            return None  # or raise an error if you want to disallow null emails
+
         if '@' not in value:
             raise ValueError("Email must be valid.")
+    
         existing_user = User.query.filter_by(email=value).first()
         if existing_user:
             raise ValueError("Email already in use.")

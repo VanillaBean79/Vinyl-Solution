@@ -7,7 +7,7 @@ import UserListings from './pages/UserListings';
 import NewListing from './pages/NewListing';
 import LoginForm from './components/LoginForm';
 import SignupForm from './components/SignupForm';
-import AuthTest from './components/AuthTest';
+
 import ProtectedRoute from './components/ProtectedRoute';
 import Navbar from './components/Navbar';
 
@@ -24,7 +24,7 @@ function App() {
           <Route path="/" element={<Home />} />
           <Route path="/login" element={<LoginForm />} />
           <Route path="/signup" element={<SignupForm />} />
-          <Route path="/auth-test" element={<AuthTest />} />
+          
 
           <Route
             path="/profile"

@@ -38,7 +38,7 @@ def create_app(config_class=DevelopmentConfig):
 
     # Session setup
     Session(app)
-    app.secret_key = os.environ.get("FLASK_SECRET_KEY", "fallback_dev_secret_key")
+    app.secret_key = os.environ.get("SECRET_KEY", "fallback_dev_secret_key")
 
     # Upload setup
     UPLOAD_FOLDER = os.path.join(os.getcwd(), 'uploads')
@@ -80,33 +80,31 @@ def create_app(config_class=DevelopmentConfig):
 
     class GitHubAuth(Resource):
         def get(self):
-            print("🔐 GitHubAuth session on return:", dict(session))
             token = github.authorize_access_token()
-            _ = token  # suppress unused warning
-
             user_data = github.get('user').json()
-            username = user_data['login']
+            username = user_data.get('login')
             email = user_data.get('email')
 
-            # Lookup user in DB by username
-            user = User.query.filter_by(username=username).first()
+            if not email:
+                emails = github.get('user/emails').json()
+                email = next((e['email'] for e in emails if e['primary'] and e['verified']), None)
 
-            # If user does not exist, create one
+            if not email:
+                return {"error": "Email is required but not found from GitHub"}, 400
+
+            user = User.query.filter_by(email=email).first()
+
             if not user:
-                user = User(username=username, email=email)
-                db.session.add(user)
-                db.session.commit()
+                return redirect("http://localhost:3000/login?error=email-not-registered")
 
-            # Store user_id and user info in session for authentication
             session['user_id'] = user.id
             session['user'] = {
                 'username': user.username,
-                'email': user.email or '',
+                'email': user.email,
             }
 
-            print("🔐 GitHubAuth session after setting user:", dict(session))
-
             return redirect("http://localhost:3000/profile")
+
 
     class GitHubProfile(Resource):
         def get(self):
