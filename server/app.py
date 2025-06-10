@@ -11,7 +11,7 @@ from flask_session import Session
 
 from config import DevelopmentConfig
 from models import db
-from Resources.user import Signup, Login, Logout, CheckSession, UserListResource
+from Resources.user import Signup, Login, Logout, CheckSession, UserListResource, UserById
 from Resources.record import RecordResource
 from Resources.listing import ListingResource, ListingByID
 from Resources.favorite import FavoritesResource, FavoriteById
@@ -110,6 +110,7 @@ def create_app(config_class=DevelopmentConfig):
     api.add_resource(UserListResource, '/users')
     api.add_resource(UploadImage, '/upload_image')
     api.add_resource(ServeUploadedFile, '/uploads/<string:filename>')
+    api.add_resource(UserById, '/users/<int:id>')
 
     _ = migrate  # suppress unused warning
 

@@ -38,6 +38,7 @@ class User(db.Model, SerializerMixin):
         '-favorites.listing.favorites',
         '-favorites.listing.user',
         '-favorites.listing.record.listings',
+        '-favorites.listing.record.listings.record',
     )
 
     def set_password(self, password):
@@ -147,5 +148,6 @@ class Favorite(db.Model, SerializerMixin):
         '-listing.user.favorites',
         '-listing.user.listings',
         '-listing.record.listings',
+        '-listing.record.listings.record',
     )
 

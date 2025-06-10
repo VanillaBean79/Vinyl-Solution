@@ -65,6 +65,32 @@ class UserListResource(Resource):
             for user in users
         ]
         return users_data, 200
+    
+    
+    
+class UserById(Resource):
+    def get(self, id):
+        user = User.query.get(id)
+        if not user:
+            return {"error": "User not found"}, 404
+
+        favorites_data = []
+        for fav in user.favorites:
+            listing = fav.listing
+            record = listing.record
+            favorites_data.append({
+                "id": listing.id,
+                "image_url": listing.image_url,
+                "description": listing.description,
+                "price": float(listing.price),
+                "record": {
+                    "title": record.title,
+                    "artist": record.artist
+                }
+            })
+
+        return {"favorites": favorites_data}, 200
+
 
 
 
