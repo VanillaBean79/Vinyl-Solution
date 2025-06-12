@@ -1,11 +1,14 @@
 // src/components/Navbar.js
 import React, { useContext } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { AuthContext } from '../context/AuthContext';
 
 function Navbar() {
   const { currentUser, logout } = useContext(AuthContext);
   const navigate = useNavigate();
+  const location = useLocation();
+
+  const isHome = location.pathname === '/';
 
   function handleLogout() {
     logout();
@@ -26,10 +29,12 @@ function Navbar() {
           </button>
         </>
       ) : (
-        <>
-          <Link to="/login" style={styles.link}>Login</Link>
-          <Link to="/signup" style={styles.link}>Sign Up</Link>
-        </>
+        !isHome && (
+          <>
+            <Link to="/login" style={styles.link}>Login</Link>
+            <Link to="/signup" style={styles.link}>Sign Up</Link>
+          </>
+        )
       )}
     </nav>
   );

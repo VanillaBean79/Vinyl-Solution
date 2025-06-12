@@ -1,9 +1,11 @@
-import React, { useContext, useState } from 'react';
+import React, { useContext, useState, useEffect } from 'react';
 import { AuthContext } from '../context/AuthContext';
 
 function NewListing() {
   const { currentUser, login } = useContext(AuthContext);
 
+  const [records, setRecords] = useState([]);
+  const [selectedRecordId, setSelectedRecordId] = useState('');
   const [formData, setFormData] = useState({
     title: '',
     artist: '',
@@ -19,6 +21,28 @@ function NewListing() {
   const [uploadError, setUploadError] = useState(null);
   const [submitError, setSubmitError] = useState(null);
 
+  useEffect(() => {
+    fetch('/records', { credentials: 'include' })
+      .then(res => res.json())
+      .then(data => setRecords(data))
+      .catch(err => console.error('Failed to fetch records:', err));
+  }, []);
+
+  useEffect(() => {
+    if (selectedRecordId) {
+      const selected = records.find(r => r.id === parseInt(selectedRecordId));
+      if (selected) {
+        setFormData(prev => ({
+          ...prev,
+          title: selected.title,
+          artist: selected.artist,
+        }));
+      }
+    } else {
+      setFormData(prev => ({ ...prev, title: '', artist: '' }));
+    }
+  }, [selectedRecordId, records]);
+
   function refreshUser() {
     fetch('/check_session', { credentials: 'include' })
       .then((res) => res.json())
@@ -30,7 +54,6 @@ function NewListing() {
     setFormData((prev) => ({ ...prev, [name]: value }));
   }
 
-  // Handle image file selection & upload
   async function handleImageChange(e) {
     const file = e.target.files[0];
     if (!file) return;
@@ -60,43 +83,65 @@ function NewListing() {
   }
 
   async function handleSubmit(e) {
-    e.preventDefault();
-    setSubmitError(null);
+  e.preventDefault();
+  setSubmitError(null);
 
-    const payload = {
-      ...formData,
-      user_id: currentUser?.id,
-      price: parseFloat(formData.price),
-    };
+  // Build payload depending on whether a record is selected
+  let payload = {
+    user_id: currentUser?.id,
+    price: parseFloat(formData.price),
+    location: formData.location,
+    condition: formData.condition,
+    listing_type: formData.listing_type,
+    description: formData.description,
+    image_url: formData.image_url,
+  };
 
-    try {
-      const res = await fetch('/listings', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
-        body: JSON.stringify(payload),
-      });
-
-      if (res.ok) {
-        setFormData({
-          title: '',
-          artist: '',
-          price: '',
-          location: '',
-          condition: '',
-          listing_type: 'SALE',
-          description: '',
-          image_url: '',
-        });
-        refreshUser();
-      } else {
-        const errorData = await res.json();
-        setSubmitError(errorData.error || 'Failed to create listing.');
-      }
-    } catch {
-      setSubmitError('Network error. Please try again.');
+  if (formData.record_id) {
+    // Use existing record ID only, no title or artist
+    payload.record_id = formData.record_id;
+  } else {
+    // No existing record selected, need title and artist
+    if (!formData.title || !formData.artist) {
+      setSubmitError('Title and Artist are required for new records.');
+      return;
     }
+    payload.title = formData.title;
+    payload.artist = formData.artist;
   }
+
+  console.log("Submitting payload:", payload);
+
+  try {
+    const res = await fetch('/listings', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
+      body: JSON.stringify(payload),
+    });
+
+    if (res.ok) {
+      setFormData({
+        title: '',
+        artist: '',
+        record_id: '',
+        price: '',
+        location: '',
+        condition: '',
+        listing_type: 'SALE',
+        description: '',
+        image_url: '',
+      });
+      refreshUser();
+    } else {
+      const errorData = await res.json();
+      setSubmitError(errorData.error || 'Failed to create listing.');
+    }
+  } catch {
+    setSubmitError('Network error. Please try again.');
+  }
+}
+
 
   if (!currentUser) return <p>Loading user...</p>;
 
@@ -107,20 +152,40 @@ function NewListing() {
         onSubmit={handleSubmit}
         style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}
       >
-        <input
-          name="title"
-          value={formData.title}
-          onChange={handleChange}
-          placeholder="Record Title"
-          required
-        />
-        <input
-          name="artist"
-          value={formData.artist}
-          onChange={handleChange}
-          placeholder="Artist"
-          required
-        />
+        <label>
+          Select a Record:
+          <select
+            value={selectedRecordId}
+            onChange={(e) => setSelectedRecordId(e.target.value)}
+          >
+            <option value="">-- New Record --</option>
+            {records.map((rec) => (
+              <option key={rec.id} value={rec.id}>
+                {rec.title} by {rec.artist}
+              </option>
+            ))}
+          </select>
+        </label>
+
+        {!selectedRecordId && (
+          <>
+            <input
+              name="title"
+              value={formData.title}
+              onChange={handleChange}
+              placeholder="Record Title"
+              required
+            />
+            <input
+              name="artist"
+              value={formData.artist}
+              onChange={handleChange}
+              placeholder="Artist"
+              required
+            />
+          </>
+        )}
+
         <input
           name="price"
           type="number"
@@ -148,7 +213,7 @@ function NewListing() {
         >
           <option value="SALE">Sale</option>
           <option value="TRADE">Trade</option>
-          <option value="Both">Both</option>
+          <option value="BOTH">Both</option>
         </select>
         <input
           name="description"
@@ -157,7 +222,6 @@ function NewListing() {
           placeholder="Description"
         />
 
-        {/* allows using camera on phones */}
         <label>
           Upload Photo (optional):
           <input
