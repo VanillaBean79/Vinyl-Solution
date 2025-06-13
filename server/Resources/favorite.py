@@ -13,7 +13,12 @@ def get_current_user():
 
 class FavoritesResource(Resource):
     def get(self):
-        favorites = Favorite.query.all()
+        user = get_current_user()
+        if not user:
+            return {"error": "Unauthorized"}, 401
+        
+        
+        favorites = Favorite.query.filter_by(user_id=user.id).all()
         favorites_data = []
 
         for favorite in favorites:
